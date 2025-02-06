@@ -1,0 +1,20 @@
+<html>
+<head>
+    <title>Custom Date Input</title>
+    <script src="simpleDateMask.js"></script>
+    <script>
+        window.simpleDateMask = function(el){
+            new SimpleDateMask(el)
+        }
+        document.onreadystatechange = function() {
+            if (document.readyState === "complete") {
+                const dateElement = document.querySelector('.datemask')
+                simpleDateMask(dateElement)
+            }
+        }
+    </script>
+</head>
+<body>
+<label>Datum:</label> <input type="text" class="datemask" value="">
+</body>
+</html>
