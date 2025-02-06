@@ -1,0 +1,150 @@
+<html>
+<head>
+    <title>Custom Date Input</title>
+    <script>
+        function setCursor(element, position) {
+            element.setSelectionRange(position, position)
+        }
+        document.onreadystatechange = function() {
+            if (document.readyState === "complete") {
+                const placeholder = '_'
+                const separator = '.'
+                const pattern = '__.__.____'
+                const validDateRegex = new RegExp('^((((_{2}|_0|[0-9]_|[0_]?[1-9]|1[0-9]|2[0-8])[.](_{2}|_0|[0-9]_|[0_]?[1-9]|1[0-2]))|((29|30|31)[.]([0_]_|[13578]_|[0_]?[13578]|1[02]))|((29|30)[.]([0_]_|[469]_|[0_]?[469]|11)))[.]([0-9_]{2,4}))|(29[.](2_|_2|[0_]?2)[.](([0-9_]{2})(00|04|08|12|16|20|24|28|32|36|40|44|48|52|56|60|64|68|72|76|80|84|88|92|96|[0-9]_|_[0-9_])))$')
+
+                const dateElement = document.querySelector('.datemask')
+                dateElement.value = pattern
+
+                dateElement.addEventListener(
+                    'focus',
+                    (event) => {
+                        const target = event.target
+                        const value = target.value
+                        setCursor(event.currentTarget, Math.max(0, value.indexOf(placeholder)))
+                    }
+                )
+
+                dateElement.addEventListener(
+                    'beforeinput',
+                    (event) => {
+                        const action = event.inputType
+                        const data = event.data
+                        const target = event.target
+                        const selectionStart = target.selectionStart
+                        const value = target.value
+                        console.log(action, data, event)
+                        switch(action) {
+                            case 'insertText':
+                                if (value.charAt(selectionStart) === '') {
+                                    event.preventDefault()
+                                }
+                                else if (data !== separator) {
+                                    const selectionEnd = target.selectionEnd
+                                    const previewValue = value.slice(0, selectionStart) + (data ?? '') + value.slice(selectionStart + 1)
+                                    if (!validDateRegex.test(previewValue)) event.preventDefault()
+                                    else target.setRangeText('', selectionStart, selectionStart + 1)
+                                }
+                                else {
+                                    event.preventDefault()
+                                    const nextDotPosition = value.indexOf(separator, selectionStart)
+                                    setCursor(target, nextDotPosition + 1)
+                                }
+                                break
+                            case 'deleteContentBackward':
+                                const selectionEnd = target.selectionEnd
+                                event.preventDefault()
+                                if (selectionStart !== selectionEnd) {
+                                    const partToDelete = value.slice(selectionStart, selectionEnd)
+                                    let replacements = []
+                                    partToDelete.split(separator).forEach(
+                                        (part) => {
+                                            replacements.push(placeholder.repeat(part.length))
+                                        }
+                                    )
+                                    target.setRangeText(
+                                        replacements.join(separator),
+                                        selectionStart,
+                                        selectionEnd
+                                    )
+                                    return
+                                }
+                                let start = selectionStart - 1
+                                if (start < 0) return
+                                if (value.charAt(start) === separator)  start -= 1
+                                target.setRangeText(placeholder, start, start + 1)
+                                setCursor(target, start)
+                                break
+                            default:
+                                break
+                        }
+                    }
+                )
+
+                dateElement.addEventListener(
+                    'keydown',
+                    (event) => {
+                        const target = event.target
+                        const selectionStart = target.selectionStart
+                        const value = target.value
+                        if (event.key.startsWith('Arrow')) return
+                        if (value.charAt(selectionStart) === separator) {
+                            setCursor(target, selectionStart + 1)
+                        }
+                    }
+                )
+
+                dateElement.addEventListener(
+                    'keyup',
+                    (event) => {
+                        const target = event.target
+                        const selectionStart = target.selectionStart
+                        const value = target.value
+                        if (event.key.startsWith('Arrow')) return
+                        if (selectionStart < 3) {
+                            const day = value.slice(0, 2)
+                            const replacedDay = day.replaceAll(placeholder, '')
+                            if (replacedDay) {
+                                const dayAsNumber = parseInt(replacedDay)
+                                let dayAsString = day
+                                let newCursorPosition = 1
+                                if ((dayAsNumber > 3) || (dayAsNumber > 0 && day.startsWith(placeholder))) {
+                                    dayAsString = dayAsNumber.toString().padStart(2, '0')
+                                    newCursorPosition = 3
+                                }
+                                target.setRangeText(dayAsString, 0, 2)
+                                setCursor(target, newCursorPosition)
+                            }
+                        }
+                        else if (selectionStart < 6) {
+                            const month = value.slice(3, 5)
+                            const replacedMonth = month.replaceAll(placeholder, '')
+                            if (replacedMonth) {
+                                const monthAsNumber = parseInt(replacedMonth)
+                                let monthAsString = month
+                                let newCursorPosition = 4
+                                if ((monthAsNumber > 1) || (monthAsNumber > 0 && month.startsWith(placeholder))) {
+                                    monthAsString = monthAsNumber.toString().padStart(2, '0')
+                                    newCursorPosition = 6
+                                }
+                                target.setRangeText(monthAsString, 3, 5)
+                                setCursor(target, newCursorPosition)
+                            }
+                        }
+                        if (value.charAt(selectionStart - 1) === separator) {
+                            //setCursor(target, selectionStart)
+                            console.log('down', value.slice(0, selectionStart))
+                            //target.setRangeText()
+                        }
+                        else if (value.charAt(selectionStart) === separator) {
+                            setCursor(target, selectionStart + 1)
+                        }
+                    }
+                )
+            }
+        }
+    </script>
+</head>
+<body>
+<label>Datum:</label> <input type="text" class="datemask" value="">
+</body>
+</html>
