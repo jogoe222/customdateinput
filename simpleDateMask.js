@@ -13,6 +13,7 @@ class SimpleDateMask {
  
         //Disable the input's autocomplete
         this.el.setAttribute('autocomplete', 'off')
+        this.el.placeholder = this.pattern
         this.el.value = this.pattern
         this.el.simpleDateMask = this
         
@@ -83,7 +84,7 @@ class SimpleDateMask {
         const data = event.data
         const selectionStart = target.selectionStart
         const value = target.value
-        console.log(action, data, event)
+        // console.log(action, data, event)
         switch(action) {
             case 'insertText':
                 if (value.charAt(selectionStart) === '') {
@@ -176,10 +177,10 @@ class SimpleDateMask {
                  _this.#_setCursor(_this, newCursorPosition)
             }
         }
+        // TODO: Is anything necessary to do here?
         if (value.charAt(selectionStart - 1) === _this.separator) {
             // _this.#_setCursor(_this, selectionStart)
-            console.log('down', value.slice(0, selectionStart))
-            //target.setRangeText()
+            // console.log('down', value.slice(0, selectionStart))
         }
         else if (value.charAt(selectionStart) === _this.separator) {
              _this.#_setCursor(_this, selectionStart + 1)
